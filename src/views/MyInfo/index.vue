@@ -3,12 +3,21 @@
     <!-- 头部区 -->
     <div class="top">
       <img src="../../assets/bg.png" alt="" />
-      <div class="loginIn">
+      <div class="loginIn" v-if="!$store.state.token">
         <div class="touxiang">
           <img src="http://liufusong.top:8080/img/profile/avatar.png" alt="" />
         </div>
         <p>游客</p>
         <van-button type="primary" @click="loginTo">去登录</van-button>
+      </div>
+      <!-- 登陆后 -->
+      <div class="loginIn loginOut" v-else>
+        <div class="touxiang">
+          <img :src="'http://liufusong.top:8080' + userList.avatar" alt="" />
+        </div>
+        <p>{{userList.nickname}}</p>
+        <van-button type="primary" @click="quit" class="quit">退出</van-button>
+        <p class="edit">编辑个人资料</p>
       </div>
     </div>
     <!-- 内容区 -->
@@ -20,14 +29,23 @@
         :text="item.text"
       />
     </van-grid>
+    <!-- 下面背景图 -->
+    <div class="join">
+      <img src="../../assets/join.png" alt="" />
+    </div>
   </div>
 </template>
 
 <script>
+// import store from '@/store'
+import { getUserInfo } from '@/api/login'
 export default {
-  created () { },
+  created () {
+    this.getUser()
+  },
   data () {
     return {
+      // isShow: true,
       list: [{
         id: 1,
         icon: 'star-o',
@@ -52,13 +70,26 @@ export default {
         id: 6,
         icon: 'service-o',
         text: '联系我们'
-      }]
+      }],
+      userList: {}
     }
   },
   methods: {
     loginTo (e) {
       e.preventDefault()
       this.$router.replace('/login')
+    },
+    quit () {
+      this.$store.commit('getUserToken', '')
+    },
+    async getUser () {
+      try {
+        const res = await getUserInfo()
+        this.userList = res.data.body
+        console.log(this.userList)
+      } catch (err) {
+        console.log(err)
+      }
     }
   },
   computed: {},
@@ -71,7 +102,7 @@ export default {
 <style scoped lang="less">
 .top {
   width: 100%;
-  height: 600px;
+  height: 700px;
   margin-bottom: 30px;
   // background-image: url("http://liufusong.top:8080/img/profile/bg.png");
   // background-size: contain;
@@ -121,5 +152,29 @@ export default {
     padding: 0 15px;
     border-radius: 10px;
   }
+}
+.join {
+  text-align: center;
+  padding-top: 30px;
+  img {
+    width: 690px;
+    height: 170px;
+    border-radius: 10px;
+  }
+}
+.edit {
+  font-size: 15px;
+  color: #999;
+}
+.loginOut {
+  height: 416px;
+  .quit {
+    width: 100px;
+    height: 40px;
+  }
+  // .edit{
+  // position: absolute;
+  // top: 150px;
+  // }
 }
 </style>

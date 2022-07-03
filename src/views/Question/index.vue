@@ -1,5 +1,7 @@
 <template>
-  <div>ask</div>
+  <div>
+    zixun
+  </div>
 </template>
 
 <script>

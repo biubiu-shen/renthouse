@@ -2,7 +2,7 @@
   <div>
     <van-nav-bar title="登录">
       <template #left>
-        <van-icon name="arrow-left" color="#fff" @click="jump" />
+        <van-icon name="arrow-left" color="#fff" @click="$router.push('my')" />
       </template>
     </van-nav-bar>
     <!-- 表单 -->
@@ -48,7 +48,7 @@ export default {
         this.$store.commit('getUserToken', res.data.body.token)
         console.log(res)
         this.$toast.success('登录成功')
-        this.$router.replace('/layout')
+        this.$router.push('/my')
       } catch (err) {
         console.log(err)
         this.$toast.fail('登陆失败')
@@ -56,7 +56,8 @@ export default {
       // console.log('submit', values)
     },
     jump () {
-      this.$router.replace('/layout')
+      console.log('ss')
+      this.$router.go(-1)
     }
   },
   computed: {},
