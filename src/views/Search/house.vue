@@ -1,6 +1,11 @@
 <template>
   <div class="root">
-    <div class="comHouse" v-for="(item, index) in allHouseList" :key="index">
+    <div
+      class="comHouse"
+      v-for="(item, index) in allHouseList"
+      :key="index"
+      @click="getHouseCode(item.houseCode)"
+    >
       <div class="left">
         <img :src="baseUrl + item.houseImg" alt="" />
       </div>
@@ -29,7 +34,7 @@
 export default {
   props: {
     allHouseList: {
-      type: Array,
+      type: [Array, Object],
       required: true
     }
   },
@@ -39,7 +44,12 @@ export default {
       baseUrl: 'http://liufusong.top:8080'
     }
   },
-  methods: {},
+  methods: {
+    getHouseCode (val) {
+      this.$store.commit('getHouseCode', val)
+      this.$router.push('/onehouse')
+    }
+  },
   computed: {},
   watch: {},
   filters: {},

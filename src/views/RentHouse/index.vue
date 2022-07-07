@@ -1,7 +1,7 @@
 <template>
   <div class="rentmain">
     <!-- title -->
-    <!-- {{ area ? area : "请输入小区名称" }} -->
+
     <van-nav-bar title="发布房源">
       <template #left>
         <van-icon name="arrow-left" @click="$router.push('/home')" />
@@ -15,8 +15,11 @@
 
         <van-field
           readonly
+          name="area"
           label="小区名称"
+          :value="$store.state.area"
           @click="$router.push('/rentsearch')"
+          :rules="[{ required: true, message: '请填写用户名' }]"
         >
           <template #extra>
             <span
@@ -25,66 +28,99 @@
             </span>
           </template>
         </van-field>
-        <van-field v-model="value" label="租金" placeholder="请输入租金/月">
+        <van-field
+          name="pirce"
+          v-model="pirce"
+          label="租金"
+          placeholder="请输入租金/月"
+          :rules="[{ required: true, message: '请填写用户名' }]"
+        >
           <template #extra>
             <span>￥/月</span>
           </template>
         </van-field>
         <van-field
-          v-model="value1"
+          name="size"
+          v-model="size"
           label="建筑面积"
           placeholder="请输入建筑面积"
+          :rules="[{ required: true, message: '请填写用户名' }]"
         >
           <template #extra>
             <span>㎡</span>
           </template>
         </van-field>
-
-        <van-field readonly label="户型" @click="typeHouse(0)">
-          <template #extra>
-            <span
-              >{{ roomType ? roomType : "请选择" }}
-              <van-icon name="arrow" />
-            </span>
-          </template>
-        </van-field>
-        <van-field readonly label="所在楼层" @click="typeHouse(1)">
-          <template #extra>
-            <span
-              >{{ floor ? floor : "请选择" }}
-              <van-icon name="arrow" />
-            </span>
-          </template>
-        </van-field>
-        <van-field readonly label="朝向" @click="typeHouse(2)">
-          <template #extra>
-            <span
-              >{{ oriented ? oriented : "请选择" }}
-              <van-icon name="arrow" />
-            </span>
-          </template>
-        </van-field>
+        <Picker :arrs="houseList.floor" name="floor" nameC="楼层"></Picker>
+        <Picker
+          :arrs="houseList.oriented"
+          name="oriented"
+          nameC="朝向"
+        ></Picker>
+        <Picker
+          :arrs="houseList.roomType"
+          name="roomType"
+          nameC="户型"
+        ></Picker>
         <p class="houseinfos">房屋标题</p>
-        <van-field placeholder="请输入标题，（例如整租 小区名 2室 5000元）">
+        <van-field
+          name="title"
+          v-model="value4"
+          placeholder="请输入标题，（例如整租 小区名 2室 5000元）"
+          :rules="[{ required: true, message: '请填写用户名' }]"
+        >
         </van-field>
-        <van-field readonly label="房屋图像"> </van-field>
-        <van-uploader :after-read="afterRead">
-          <div class="updateImg">+</div>
-        </van-uploader>
+
+        <van-field
+          name="houseImg"
+          label="文件上传"
+          :rules="[{ required: false }]"
+        >
+          <template #input>
+            <van-uploader v-model="uploader" />
+            <!-- <div
+              @click="$refs.ipt.click()"
+              style="width: 100px; height: 100px; background-color: red"
+            >
+              <img :src="imgSrc" alt="" />
+              <input type="file" style="display: none" ref="ipt" />
+            </div> -->
+          </template>
+        </van-field>
 
         <p class="houseinfos">房屋配置</p>
 
-        <van-grid :column-num="5">
-          <van-grid-item
-            v-for="(item, index) in houseList.supporting"
-            :key="index"
-            icon="photo-o"
-            :text="item.label"
-          />
-        </van-grid>
-
+        <!-- fuxuan -->
+        <van-field name="supporting">
+          <template #input>
+            <van-checkbox-group v-model="supporting" direction="horizontal">
+              <!-- <van-grid
+                :column-num="5"
+                v-for="(item, index) in houseList.supporting"
+                :key="index"
+                @click="choose(item)"
+              >
+                <van-grid-item icon="photo-o" :text="item.label" />
+              </van-grid> -->
+              <van-checkbox
+                :name="item.label"
+                shape="square"
+                v-for="(item, index) in houseList.supporting"
+                :key="index"
+                ><van-grid :column-num="5">
+                  <van-grid-item icon="photo-o" :text="item.label" /> </van-grid
+              ></van-checkbox>
+            </van-checkbox-group>
+          </template>
+        </van-field>
+        <!-- fuxuan -->
         <p class="houseinfos">房屋描述</p>
-        <van-field placeholder="请输入房屋描述信息"> </van-field>
+        <van-field
+          placeholder="请输入房屋描述信息"
+          name="description"
+          v-model="description"
+          :rules="[{ required: true, message: '请填写用户名' }]"
+        >
+        </van-field>
         <div style="margin: 16px">
           <van-button native-type="button" @click="cancelHouse"
             >取消</van-button
@@ -93,48 +129,35 @@
         </div>
       </van-cell-group>
     </van-form>
-    <!-- 弹出层 -->
-    <popup
-      :show="show"
-      @closePop="closeP($event)"
-      :columns="columns[num]"
-    ></popup>
   </div>
 </template>
 
 <script>
+import Picker from './picker.vue'
 import { houseInfo } from '@/api/home'
-import popup from './popup.vue'
-// import EventBus from '@/EventBus/index'
+import { sellHouse } from '@/api/house'
+// import { houseImg } from '@/api/house'
 export default {
+
   created () {
     this.getHouse()
-    // EventBus.$on('conArea', (val) => {
-    //   this.area = 'ss'
-    //   console.log(typeof val)
-    //   console.log('guazai', this.area, val)
-    // })
   },
   data () {
     return {
-      value: '',
-      value1: '',
-      show: false,
-      num: 0,
-      columns: [],
+      pirce: '',
+      size: '',
+      description: '',
+      value4: '',
+      imgSrc: '',
+      // show: false,
       houseList: [],
-      roomType: '',
-      floor: '',
-      oriented: ''
-      // area: ''
+      uploader: [{ url: 'https://img01.yzcdn.cn/vant/leaf.jpg' }],
+      checkbox: false,
+      supporting: []
     }
   },
 
   mounted () {
-    // EventBus.$on('conArea', (val) => {
-    //   this.area = val
-    //   console.log('guazai', this.area)
-    // })
   },
   beforeDestroy () {
     this.$store.commit('conArea', '')
@@ -147,64 +170,62 @@ export default {
       // 此时可以自行将文件上传至服务器
       console.log(file)
     },
-    closeP (val) {
-      if (this.num === 0) {
-        this.roomType = val
-      } else if (this.num === 1) {
-        this.floor = val
-      } else {
-        this.oriented = val
-      }
-      console.log(val)
-      this.show = false
-    },
-    typeHouse (mat) {
-      this.show = true
-      this.num = mat
-    },
     async getHouse () {
       try {
         const res = await houseInfo()
         this.houseList = res.data.body
-        let arr = []
-        this.houseList.roomType.forEach(item => arr.push(item.label))
-        this.columns.push(arr)
-        arr = []
-        this.houseList.floor.forEach(item => arr.push(item.label))
-        this.columns.push(arr)
-        arr = []
-        this.houseList.oriented.forEach(item => arr.push(item.label))
-        this.columns.push(arr)
-        console.log(this.columns)
-        // console.log(this.houseList.floor)
         console.log(this.houseList)
+      } catch (res) {
+        console.log(res)
+      }
+    },
+    async onSubmit (values) {
+      // const fd = new FormData()
+      // fd.append('file', this.$refs.ipt.files[0])
+      // console.log(fd)
+      // try {
+      //   const res = await houseImg(fd)
+      //   console.log(res)
+      // } catch (err) {
+      //   console.log(err)
+      // }
+      try {
+        const res = await sellHouse(values)
+        console.log(res)
       } catch (err) {
         console.log(err)
       }
-    },
-    onSubmit (values) {
-      this.$dialog.confirm({
-        message: '确定提交房屋信息吗？'
-      }).then(() => { }).catch(() => { })
+      // this.$dialog.confirm({
+      //   message: '确定提交房屋信息吗？'
+      // }).then(() => { }).catch(() => { })
       console.log('submit', values)
     },
     cancelHouse () {
-      this.$dialog.confirm({
-        message: '确定要放弃编辑吗？'
-      }).then(() => {
+      // this.$dialog.confirm({
+      //   message: '确定要放弃编辑吗？'
+      // }).then(() => {
 
-      }).catch(() => {
+      // }).catch(() => {
 
-      })
+      // })
+    },
+    choose (item) {
+      console.log('ss')
+      this.supporting.push(item.label)
+      console.log(this.supporting)
     }
   },
   computed: {
-
+    // imgSrc () {
+    //   const url = window.URL.createObjectURL(this.$refs.ipt.files[0])
+    //   return url
+    // }
   },
   watch: {},
   filters: {},
   components: {
-    popup
+    // popup,
+    Picker
   }
 }
 </script>

@@ -15,7 +15,7 @@
         <div class="touxiang">
           <img :src="'http://liufusong.top:8080' + userList.avatar" alt="" />
         </div>
-        <p>{{userList.nickname}}</p>
+        <p>{{ userList.nickname }}</p>
         <van-button type="primary" @click="quit" class="quit">退出</van-button>
         <p class="edit">编辑个人资料</p>
       </div>
@@ -27,6 +27,7 @@
         :key="item.id"
         :icon="item.icon"
         :text="item.text"
+        @click="goTo(item.id)"
       />
     </van-grid>
     <!-- 下面背景图 -->
@@ -86,9 +87,16 @@ export default {
       try {
         const res = await getUserInfo()
         this.userList = res.data.body
-        console.log(this.userList)
+        console.log('user', this.userList)
       } catch (err) {
         console.log(err)
+      }
+    },
+    goTo (val) {
+      if (val === 1) {
+        this.$router.push('/collect')
+      } else if (val === 2) {
+        this.$router.push('/seehouse')
       }
     }
   },

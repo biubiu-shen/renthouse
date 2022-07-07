@@ -30,3 +30,13 @@ export const getHouseListFind = () => {
     }
   })
 }
+/**
+ *ju具体的一个房子
+ * @param {*} id
+ * @returns
+ */
+export const getOneHouse = (id) => {
+  return request({
+    url: `/houses/${id}`
+  })
+}

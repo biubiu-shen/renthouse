@@ -1,7 +1,7 @@
 <template>
   <div class="nav-bar-color">
     <div class="nav-bar-small">
-      <span @click="ToCity">北京</span>
+      <span @click="ToCity">{{$store.state.cityName}}</span>
       <van-icon name="arrow-down" class="iconVant" />
       <van-icon name="search" class="iconVant" />
       <span>请输入小区或者地址</span>

@@ -1,6 +1,7 @@
 /**
  * 轮播图
  */
+import store from '@/store'
 import request from '@/utils/request'
 export const swipe = () => {
   return request({
@@ -14,7 +15,7 @@ export const swipe = () => {
 export const rentGroups = () => {
   return request({
     url: '/home/groups',
-    area: 'AREA|88cff55c-aaa4-e2e0'
+    area: store.state.cityID
   })
 }
 /**

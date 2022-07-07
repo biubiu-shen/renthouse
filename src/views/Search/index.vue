@@ -1,9 +1,12 @@
+<!-- eslint-disable vue/no-side-effects-in-computed-properties -->
 <template>
   <div class="mmm">
     <div class="nav-bar-title">
       <van-icon name="arrow-left" @click="$router.push('/home')" />
       <div class="title">
-        <span class="area-find">北京 <van-icon name="arrow-down" /></span>
+        <span class="area-find" @click="$router.push('/city')"
+          >{{ $store.state.cityName }}<van-icon name="arrow-down"
+        /></span>
         <span><van-icon name="search" />请输入小区地址</span>
       </div>
 
@@ -12,22 +15,26 @@
     <!-- tabbar -->
     <van-dropdown-menu>
       <van-dropdown-item v-model="value1" title="区域" ref="item">
-        <van-picker :columns="areaList" value-key="label">
+        <van-picker
+          :columns="[allList.area, allList.subway]"
+          value-key="label"
+          :columns-placeholder="['请选择', '请选择', '请选择']"
+        >
           <template #columns-bottom>
             <btn></btn>
           </template>
         </van-picker>
       </van-dropdown-item>
 
-      <van-dropdown-item v-model="value2" title="方式" ref="item">
-        <van-picker :columns="rentType">
+      <van-dropdown-item v-model="value2" title="方式">
+        <van-picker :columns="allList.rentType" value-key="label">
           <template #columns-bottom>
             <btn></btn>
           </template>
         </van-picker>
       </van-dropdown-item>
-      <van-dropdown-item v-model="value3" title="租金" ref="item">
-        <van-picker :columns="price">
+      <van-dropdown-item v-model="value3" title="租金">
+        <van-picker :columns="allList.price" value-key="label">
           <template #columns-bottom>
             <btn></btn>
           </template>
@@ -76,8 +83,9 @@ import selectSkill from './selectSkill.vue'
 import { mapState } from 'vuex'
 export default {
   created () {
-    // this.getHouseAll()
+    this.getHouseAll()
     // this.getAreaFind()
+    console.log('coms', this.columns)
   },
   data () {
     return {
@@ -86,6 +94,34 @@ export default {
       value2: 'a',
       value3: 'a',
       value4: 'a'
+      // columns: [
+      //   {
+      //     label: '浙江',
+      //     children: [
+      //       {
+      //         label: '杭州',
+      //         children: [{ label: '西湖区', children: [{ label: 'sss' }] }, { label: '余杭区' }]
+      //       },
+      //       {
+      //         label: '温州',
+      //         children: [{ label: '鹿城区' }, { label: '瓯海区' }]
+      //       }
+      //     ]
+      //   },
+      //   {
+      //     label: '福建',
+      //     children: [
+      //       {
+      //         label: '福州',
+      //         children: [{ label: '鼓楼区' }, { label: '台江区' }]
+      //       },
+      //       {
+      //         label: '厦门',
+      //         children: [{ label: '思明区' }, { label: '海沧区' }]
+      //       }
+      //     ]
+      //   }
+      // ]
     }
   },
   methods: {
@@ -126,26 +162,32 @@ export default {
   },
   computed: {
     ...mapState(['allList', 'allHouseList']),
-    areaList () {
-      const arr = []
-      arr[0] = this.allList.area
-      // arr[0].children = this.allList.area.children.map(item => item)
-      arr[1] = this.allList.subway
+    columns () {
+      let arr = []
+      // vant级联有一个问题，数组中同级的必须格式一致，比如说如果这个列表有三级，那么第二级必须都有children，不然只会显示一列
+      // delete this.allList.area.children[0]
+      // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+      this.allList.area.children[0].children = [{ label: '' }]
+      // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+      this.allList.subway.children[0].children = [{ label: '' }]
+      arr = [this.allList.area, this.allList.subway]
       console.log('sub', arr)
       return arr
-    },
-    rentType () {
-      let arr = []
-      // arr.push(this.allList.rentType)
-      arr = this.allList.rentType.map(item => item.label)
-      console.log('arr', arr)
-      return arr
-    },
-    price () {
-      let arr = []
-      arr = this.allList.price.map(item => item.label)
-      return arr
     }
+    // rentType () {
+    //   let arr = []
+    //   arr.push(this.allList.rentType)
+    //   arr = this.allList.rentType.map(item => item.label)
+    //   console.log('arr', arr)
+    //   return arr
+    //   // return this.allList.area
+    // },
+    // price () {
+    //   let arr = []
+    //   arr = this.allList.price.map(item => item.label)
+    //   console.log(this.allList.price)
+    //   return arr
+    // }
 
   },
   watch: {},

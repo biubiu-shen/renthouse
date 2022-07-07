@@ -9,21 +9,30 @@ const vuexLocal = new VuexPersistence({
 export default new Vuex.Store({
   state: {
     token: '',
-    // 做完城市页面需要将其改成动态
     cityID: 'AREA|88cff55c-aaa4-e2e0',
+    cityName: '北京',
     area: '',
     allList: {},
     allHouseList: [],
-    arr: []
+    arr: [],
+    allCity: [],
+    houseCode: ''
 
   },
   getters: {
   },
   mutations: {
+    // 城市id
+    setCityId (state, payload) {
+      state.cityID = payload.id
+      state.cityName = payload.name
+    },
+    // 身份标识
     getUserToken (state, payload) {
       console.log(payload)
       state.token = payload
     },
+    // 获取所有区域信息（网卡不想每次都请求）
     conArea (state, payload) {
       state.area = payload
     },
@@ -46,6 +55,14 @@ export default new Vuex.Store({
       if (payload === 'clear') {
         state.arr = []
       }
+    },
+    // 所有城市列表
+    setC (state, payload) {
+      state.allCity = payload
+    },
+    // housecode
+    getHouseCode (state, payload) {
+      state.houseCode = payload
     }
   },
   actions: {

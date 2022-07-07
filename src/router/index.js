@@ -44,6 +44,26 @@ const routes = [
   {
     path: '/rentsearch',
     component: () => import('@/views/RentHouse/houseSearch.vue')
+  },
+  {
+    path: '/onehouse',
+    component: () => import('@/views/oneHouse/index.vue')
+  },
+  {
+    path: '/map',
+    component: () => import('@/views/Map/index.vue')
+  },
+  {
+    path: '/collect',
+    component: () => import('@/views/Collect/index.vue')
+  },
+  {
+    path: '/seehouse',
+    component: () => import('@/views/SeeHouse/index.vue')
+  },
+  {
+    path: '/text',
+    component: () => import('@/views/text.vue')
   }
 ]
 

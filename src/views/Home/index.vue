@@ -32,7 +32,7 @@
         </div>
         <p>合租</p>
       </van-grid-item>
-      <van-grid-item>
+      <van-grid-item @click="$router.push('/map')">
         <div class="green">
           <van-icon
             name="location-o"
