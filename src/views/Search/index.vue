@@ -16,27 +16,27 @@
     <van-dropdown-menu>
       <van-dropdown-item v-model="value1" title="区域" ref="item">
         <van-picker
-          :columns="[allList.area, allList.subway]"
+          :columns="columns"
           value-key="label"
           :columns-placeholder="['请选择', '请选择', '请选择']"
         >
           <template #columns-bottom>
-            <btn></btn>
+            <btn @cancel="$refs.item.toggle()"></btn>
           </template>
         </van-picker>
       </van-dropdown-item>
 
       <van-dropdown-item v-model="value2" title="方式">
-        <van-picker :columns="allList.rentType" value-key="label">
+        <van-picker :columns="allList.rentType" value-key="label" ref="item1">
           <template #columns-bottom>
-            <btn></btn>
+            <btn @cancel="$refs.item1.toggle()"></btn>
           </template>
         </van-picker>
       </van-dropdown-item>
       <van-dropdown-item v-model="value3" title="租金">
-        <van-picker :columns="allList.price" value-key="label">
+        <van-picker :columns="allList.price" value-key="label" ref="item2">
           <template #columns-bottom>
-            <btn></btn>
+            <btn @cancel="$refs.item2.toggle()"></btn>
           </template>
         </van-picker>
       </van-dropdown-item>
@@ -47,36 +47,27 @@
       </van-dropdown-item>
     </van-dropdown-menu>
     <van-popup v-model="show" position="right" :style="{ width: '80%' }">
-      <selectSkill
-        label="户型"
-        :list="$store.state.allList.roomType"
-      ></selectSkill>
-      <selectSkill
-        label="朝向"
-        :list="$store.state.allList.oriented"
-      ></selectSkill>
-      <selectSkill
-        label="楼层"
-        :list="$store.state.allList.floor"
-      ></selectSkill>
+      <selectSkill label="户型" :list="allList.roomType"></selectSkill>
+      <selectSkill label="朝向" :list="allList.oriented"></selectSkill>
+      <selectSkill label="楼层" :list="allList.floor"></selectSkill>
       <selectSkill
         label="房屋亮点"
-        :list="$store.state.allList.characteristic"
+        :list="allList.characteristic"
       ></selectSkill>
       <div class="btnbottom">
         <van-button type="default" class="btn" @click="clearArr"
           >清除</van-button
         >
-        <van-button type="primary" class="btn">确定</van-button>
+        <van-button type="primary" class="btn" @click="submit">确定</van-button>
       </div>
     </van-popup>
 
-    <House :allHouseList="allHouseList"></House>
+    <House :allHouseList="list.length===0?allHouseList:list"></House>
   </div>
 </template>
 
 <script>
-import { searchAreaFind, getHouseListFind } from '@/api/search'
+import { searchAreaFind, getHouseListFind, selectHouse } from '@/api/search'
 import House from './house.vue'
 import btn from './btn.vue'
 import selectSkill from './selectSkill.vue'
@@ -84,8 +75,7 @@ import { mapState } from 'vuex'
 export default {
   created () {
     this.getHouseAll()
-    // this.getAreaFind()
-    console.log('coms', this.columns)
+    this.getAreaFind()
   },
   data () {
     return {
@@ -93,51 +83,36 @@ export default {
       value1: 0,
       value2: 'a',
       value3: 'a',
-      value4: 'a'
-      // columns: [
-      //   {
-      //     label: '浙江',
-      //     children: [
-      //       {
-      //         label: '杭州',
-      //         children: [{ label: '西湖区', children: [{ label: 'sss' }] }, { label: '余杭区' }]
-      //       },
-      //       {
-      //         label: '温州',
-      //         children: [{ label: '鹿城区' }, { label: '瓯海区' }]
-      //       }
-      //     ]
-      //   },
-      //   {
-      //     label: '福建',
-      //     children: [
-      //       {
-      //         label: '福州',
-      //         children: [{ label: '鼓楼区' }, { label: '台江区' }]
-      //       },
-      //       {
-      //         label: '厦门',
-      //         children: [{ label: '思明区' }, { label: '海沧区' }]
-      //       }
-      //     ]
-      //   }
-      // ]
+      value4: 'a',
+      allList: [],
+      columns: [],
+      obj: {
+        area: null,
+        subway: null,
+        rentType: null,
+        price: null,
+        more: null,
+        roomType: null,
+        oriented: null,
+        characteristic: null,
+        floor: null
+      },
+      list: []
     }
   },
   methods: {
-    onCancel () {
-      this.$refs.item.toggle()
-    },
-    onConfirm () {
-      this.$refs.item.toggle()
-    },
+
     async getAreaFind () {
       try {
         const res = await searchAreaFind()
-        // this.allList = res.data.body
-        this.$store.commit('setList', res.data.body)
-
-        // console.log(this.allList)
+        this.allList = res.data.body
+        // this.$store.commit('setList', res.data.body)
+        // vant级联有一个问题，数组中同级的必须格式一致，比如说如果这个列表有三级，那么第二级必须都有children，不然只会显示一列
+        // delete this.allList.area.children[0]
+        this.allList.area.children[0].children = [{ label: '' }]
+        this.allList.subway.children[0].children = [{ label: '' }]
+        this.columns = [this.allList.area, this.allList.subway]
+        console.log('sub', this.columns)
       } catch (err) {
         console.log('err', err)
       }
@@ -158,34 +133,31 @@ export default {
     },
     clearArr () {
       this.$store.commit('setArr', 'clear')
+    },
+    async submit () {
+      try {
+        console.log(this.$store.state.more)
+        this.obj.more = this.$store.state.more.join('|')
+        const res = await selectHouse(this.obj)
+        this.show = false
+        this.list = res.data.body.list
+        console.log(res)
+      } catch (err) {
+        console.log(err)
+      }
+      this.$store.commit('setArr', 'clear')
     }
   },
   computed: {
-    ...mapState(['allList', 'allHouseList']),
-    columns () {
-      let arr = []
-      // vant级联有一个问题，数组中同级的必须格式一致，比如说如果这个列表有三级，那么第二级必须都有children，不然只会显示一列
-      // delete this.allList.area.children[0]
-      // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-      this.allList.area.children[0].children = [{ label: '' }]
-      // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-      this.allList.subway.children[0].children = [{ label: '' }]
-      arr = [this.allList.area, this.allList.subway]
-      console.log('sub', arr)
-      return arr
-    }
-    // rentType () {
+    ...mapState(['allHouseList'])
+    // columns () {
     //   let arr = []
-    //   arr.push(this.allList.rentType)
-    //   arr = this.allList.rentType.map(item => item.label)
-    //   console.log('arr', arr)
-    //   return arr
-    //   // return this.allList.area
-    // },
-    // price () {
-    //   let arr = []
-    //   arr = this.allList.price.map(item => item.label)
-    //   console.log(this.allList.price)
+    //   // vant级联有一个问题，数组中同级的必须格式一致，比如说如果这个列表有三级，那么第二级必须都有children，不然只会显示一列
+    //   // delete this.allList.area.children[0]
+    //   this.allList.area.children[0].children = [{ label: '' }]
+    //   this.allList.subway.children[0].children = [{ label: '' }]
+    //   arr = [this.allList.area, this.allList.subway]
+    //   console.log('sub', arr)
     //   return arr
     // }
 

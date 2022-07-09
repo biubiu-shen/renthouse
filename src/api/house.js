@@ -1,11 +1,11 @@
-import store from '@/store'
+// import store from '@/store'
 import request from '@/utils/request'
 /**
  *发布房屋
  * @param {*} param0
  * @returns
  */
-export const sellHouse = ({ title, description, houseImg, oriented, supporting, price, roomType, size, floor }) => {
+export const sellHouse = ({ title, description, houseImg, oriented, supporting, price, roomType, size, floor, community }) => {
   return request({
     method: 'post',
     url: '/user/houses',
@@ -19,7 +19,7 @@ export const sellHouse = ({ title, description, houseImg, oriented, supporting, 
       roomType,
       size,
       floor,
-      community: store.state.cityID
+      community
     }
   })
 }
@@ -78,12 +78,10 @@ export const seeCollect = (id) => {
  * @param {*} file
  * @returns
  */
-export const houseImg = (file) => {
+export const houseImg = (data) => {
   return request({
     method: 'post',
     url: '/houses/image',
-    data: {
-      file
-    }
+    data// 直接传formdate实例即可，实例在append的时候会推入对接口相关的属性名
   })
 }

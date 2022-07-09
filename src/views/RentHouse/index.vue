@@ -15,9 +15,9 @@
 
         <van-field
           readonly
-          name="area"
+          name="community"
           label="小区名称"
-          :value="$store.state.area"
+          :value="$store.state.community"
           @click="$router.push('/rentsearch')"
           :rules="[{ required: true, message: '请填写用户名' }]"
         >
@@ -76,14 +76,12 @@
           :rules="[{ required: false }]"
         >
           <template #input>
-            <van-uploader v-model="uploader" />
-            <!-- <div
-              @click="$refs.ipt.click()"
-              style="width: 100px; height: 100px; background-color: red"
-            >
-              <img :src="imgSrc" alt="" />
-              <input type="file" style="display: none" ref="ipt" />
-            </div> -->
+            <van-uploader
+              v-model="uploader"
+              ref="ipt"
+              @change="imgForm"
+              :after-read="afterRead1"
+            />
           </template>
         </van-field>
 
@@ -93,22 +91,27 @@
         <van-field name="supporting">
           <template #input>
             <van-checkbox-group v-model="supporting" direction="horizontal">
-              <!-- <van-grid
-                :column-num="5"
-                v-for="(item, index) in houseList.supporting"
-                :key="index"
-                @click="choose(item)"
-              >
-                <van-grid-item icon="photo-o" :text="item.label" />
-              </van-grid> -->
               <van-checkbox
                 :name="item.label"
                 shape="square"
                 v-for="(item, index) in houseList.supporting"
                 :key="index"
-                ><van-grid :column-num="5">
-                  <van-grid-item icon="photo-o" :text="item.label" /> </van-grid
-              ></van-checkbox>
+              >
+                <template #icon="props">
+                  <img
+                    class="img-icon"
+                    :src="props.checked ? activeIcon : inactiveIcon"
+                  />
+                </template>
+                <van-grid :column-num="5">
+                  <van-grid-item
+                    icon="photo-o"
+                    :text="item.label"
+                    :class="gridShow.findIndex(i=>i===index) !== -1 ? 'active' : ''"
+                    @click="pickMore(index)"
+                  />
+                </van-grid>
+              </van-checkbox>
             </van-checkbox-group>
           </template>
         </van-field>
@@ -135,15 +138,18 @@
 <script>
 import Picker from './picker.vue'
 import { houseInfo } from '@/api/home'
-import { sellHouse } from '@/api/house'
-// import { houseImg } from '@/api/house'
+import { sellHouse, houseImg } from '@/api/house'
+// import { mapState } from 'vuex'
+// import {  } from '@/api/house'
 export default {
 
   created () {
     this.getHouse()
+    // console.log(this.$store.state.houseList)
   },
   data () {
     return {
+      gridShow: [],
       pirce: '',
       size: '',
       description: '',
@@ -151,9 +157,10 @@ export default {
       imgSrc: '',
       // show: false,
       houseList: [],
-      uploader: [{ url: 'https://img01.yzcdn.cn/vant/leaf.jpg' }],
+      uploader: [],
       checkbox: false,
-      supporting: []
+      supporting: [],
+      img: null
     }
   },
 
@@ -166,60 +173,81 @@ export default {
     text () {
       console.log('ss')
     },
-    afterRead (file) {
-      // 此时可以自行将文件上传至服务器
-      console.log(file)
-    },
+    // afterRead1 (file) {
+    //   // 此时可以自行将文件上传至服务器
+    //   console.log(file)
+    // },
     async getHouse () {
       try {
         const res = await houseInfo()
+        // this.$store.commit('setList', res.data.body)
         this.houseList = res.data.body
         console.log(this.houseList)
       } catch (res) {
         console.log(res)
       }
     },
-    async onSubmit (values) {
-      // const fd = new FormData()
-      // fd.append('file', this.$refs.ipt.files[0])
-      // console.log(fd)
-      // try {
-      //   const res = await houseImg(fd)
-      //   console.log(res)
-      // } catch (err) {
-      //   console.log(err)
-      // }
-      try {
-        const res = await sellHouse(values)
-        console.log(res)
-      } catch (err) {
-        console.log(err)
-      }
-      // this.$dialog.confirm({
-      //   message: '确定提交房屋信息吗？'
-      // }).then(() => { }).catch(() => { })
-      console.log('submit', values)
+    onSubmit (values) {
+      this.$dialog.confirm({
+        message: '确定提交房屋信息吗？'
+      }).then(async () => {
+        try {
+          values.supporting = values.supporting.join('|')
+          values.houseImg = this.img.join('|')
+          const res = await sellHouse(values)
+          console.log(res)
+        } catch (err) {
+          console.log(err)
+        }
+      }).catch(() => {
+        return false
+      })
+      // console.log('submit', values)
     },
     cancelHouse () {
-      // this.$dialog.confirm({
-      //   message: '确定要放弃编辑吗？'
-      // }).then(() => {
+      this.$dialog.confirm({
+        message: '确定要放弃编辑吗？'
+      }).then(() => {
+        this.$router.push('/home')
+      }).catch(() => {
 
-      // }).catch(() => {
-
-      // })
+      })
     },
     choose (item) {
       console.log('ss')
       this.supporting.push(item.label)
       console.log(this.supporting)
+    },
+    async afterRead1 (file) {
+      // let that = this
+      const fd = new FormData()
+      // console.log(file.file)
+      fd.append('file', file.file)
+      // console.log('fd', fd)
+      try {
+        const res = await houseImg(fd)
+        this.img = res.data.body
+        console.log(this.img)
+        console.log(res)
+      } catch (err) {
+        console.log(err)
+      }
+      // console.log(file)
+    },
+    imgForm () {
+      console.log('click')
+    },
+    pickMore (val) {
+      if (this.gridShow.findIndex(i => i === val) === -1) {
+        this.gridShow.push(val)
+      } else {
+        const it = this.gridShow.findIndex(i => i === val)
+        this.gridShow.splice(it, 1)
+      }
     }
   },
   computed: {
-    // imgSrc () {
-    //   const url = window.URL.createObjectURL(this.$refs.ipt.files[0])
-    //   return url
-    // }
+    // {...mapState.houseList }
   },
   watch: {},
   filters: {},
@@ -296,4 +324,14 @@ export default {
 // /deep/.van-grid{
 //   margin-bottom: 100px;
 // }
+/deep/.van-field__control {
+  color: #fff;
+}
+
+.img-icon {
+  height: 20px;
+}
+.active {
+  color: #21b97a;
+}
 </style>

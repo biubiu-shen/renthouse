@@ -40,3 +40,36 @@ export const getOneHouse = (id) => {
     url: `/houses/${id}`
   })
 }
+/***
+ * 按条件搜索房子
+ */
+export const selectHouse = ({
+  area,
+  subway,
+  rentType,
+  price,
+  more,
+  roomType,
+  oriented,
+  characteristic,
+  floor
+}) => {
+  return request({
+    url: '/houses',
+    params: {
+      cityId: store.state.cityID,
+      area,
+      subway,
+      rentType,
+      price,
+      more,
+      roomType,
+      oriented,
+      characteristic,
+      floor,
+      start: 1,
+      end: 20
+
+    }
+  })
+}

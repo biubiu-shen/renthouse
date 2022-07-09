@@ -5,7 +5,7 @@
       <span
         v-for="(item, index) in list"
         :key="index"
-        @click="isAct(item.label)"
+        @click="isAct(item)"
         :class="
           $store.state.arr.findIndex((it) => it === item.label) === -1
             ? ''

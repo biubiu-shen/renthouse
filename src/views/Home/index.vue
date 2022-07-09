@@ -32,7 +32,7 @@
         </div>
         <p>合租</p>
       </van-grid-item>
-      <van-grid-item @click="$router.push('/map')">
+      <van-grid-item @click="$router.push('/')">
         <div class="green">
           <van-icon
             name="location-o"
@@ -113,7 +113,6 @@ export default {
       }
     },
     toRent () {
-      // console.log('ss')
       this.$router.push('/rent')
     }
   },

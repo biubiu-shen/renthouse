@@ -1,7 +1,7 @@
 <template>
   <div class="button-bottom">
-    <van-button type="default">取消</van-button>
-    <van-button type="primary">确定</van-button>
+    <van-button type="default" @click="onCancel">取消</van-button>
+    <van-button type="primary" @click="onConfirm">确定</van-button>
   </div>
 </template>
 <script>
@@ -10,7 +10,14 @@ export default {
   data () {
     return {}
   },
-  methods: {},
+  methods: {
+    onCancel () {
+      this.$emit('cancel')
+    },
+    onConfirm () {
+      // this.$refs.item.toggle()
+    }
+  },
   computed: {},
   watch: {},
   filters: {},

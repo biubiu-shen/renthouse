@@ -14,7 +14,7 @@
         class="result"
         v-for="(item, index) in resultList"
         :key="index"
-        @click="confirmArea(item.communityName)"
+        @click="confirmArea(item)"
       >
         {{ item.communityName }}
       </div>
