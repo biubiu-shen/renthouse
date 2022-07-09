@@ -97,17 +97,18 @@
                 v-for="(item, index) in houseList.supporting"
                 :key="index"
               >
-                <template #icon="props">
-                  <img
-                    class="img-icon"
-                    :src="props.checked ? activeIcon : inactiveIcon"
-                  />
+                <template #icon>
+                  <img class="img-icon" />
                 </template>
                 <van-grid :column-num="5">
                   <van-grid-item
                     icon="photo-o"
                     :text="item.label"
-                    :class="gridShow.findIndex(i=>i===index) !== -1 ? 'active' : ''"
+                    :class="
+                      gridShow.findIndex((i) => i === index) !== -1
+                        ? 'active'
+                        : ''
+                    "
                     @click="pickMore(index)"
                   />
                 </van-grid>
@@ -192,11 +193,17 @@ export default {
         message: '确定提交房屋信息吗？'
       }).then(async () => {
         try {
-          values.supporting = values.supporting.join('|')
-          values.houseImg = this.img.join('|')
+          if (values.supporting && values.supporting.length !== 0) {
+            values.supporting = values.supporting.join('|')
+          }
+          if (this.img && this.img.length !== 0) {
+            values.houseImg = this.img.join('|')
+          }
           const res = await sellHouse(values)
+          this.$toast.success('成功发布')
           console.log(res)
         } catch (err) {
+          this.$toast.fail('发布失败')
           console.log(err)
         }
       }).catch(() => {
@@ -326,6 +333,12 @@ export default {
 // }
 /deep/.van-field__control {
   color: #fff;
+  &:nth-last-child(2) {
+    color: #000;
+  }
+  &:nth-last-child(7) {
+    color: #000;
+  }
 }
 
 .img-icon {

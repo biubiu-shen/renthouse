@@ -62,7 +62,7 @@
       </div>
     </van-popup>
 
-    <House :allHouseList="list.length===0?allHouseList:list"></House>
+    <House :allHouseList="list.length === 0 ? allHouseList : list"></House>
   </div>
 </template>
 
@@ -139,12 +139,12 @@ export default {
         console.log(this.$store.state.more)
         this.obj.more = this.$store.state.more.join('|')
         const res = await selectHouse(this.obj)
-        this.show = false
         this.list = res.data.body.list
         console.log(res)
       } catch (err) {
         console.log(err)
       }
+      this.show = false
       this.$store.commit('setArr', 'clear')
     }
   },
