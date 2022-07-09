@@ -1,6 +1,8 @@
 const { defineConfig } = require('@vue/cli-service')
 const path = require('path')
 module.exports = defineConfig({
+  publicPath: './',
+  // hash模式打包后需要加上面这一行，不然打开dist中的html是一片空白
   transpileDependencies: true,
   css: {
     loaderOptions: {
