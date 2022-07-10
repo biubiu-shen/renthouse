@@ -14,30 +14,43 @@
     </div>
     <!-- tabbar -->
     <van-dropdown-menu>
-      <van-dropdown-item v-model="value1" title="区域" ref="item">
-        <van-picker
-          :columns="columns"
-          value-key="label"
-          :columns-placeholder="['请选择', '请选择', '请选择']"
-        >
+      <van-dropdown-item v-model="value1" title="区域" ref="item" >
+        <van-picker :columns="columns" value-key="label" ref="pick" @confirm="onConfirm2">
           <template #columns-bottom>
-            <btn @cancel="$refs.item.toggle()"></btn>
+            <btn
+              @cancel="$refs.item.toggle()"
+              @confirm="triggerConfirm('pick', 'item')"
+            ></btn>
           </template>
         </van-picker>
       </van-dropdown-item>
 
-      <van-dropdown-item v-model="value2" title="方式">
-        <van-picker :columns="allList.rentType" value-key="label" ref="item1">
+      <van-dropdown-item v-model="value2" title="方式" ref="item1">
+        <van-picker :columns="allList.rentType" value-key="label" ref="pick2" @confirm="onConfirm1">
           <template #columns-bottom>
-            <btn @cancel="$refs.item1.toggle()"></btn>
+            <btn
+              @cancel="$refs.item1.toggle()"
+              @confirm="triggerConfirm('pick2', 'item1')"
+            ></btn>
           </template>
         </van-picker>
       </van-dropdown-item>
-      <van-dropdown-item v-model="value3" title="租金">
-        <van-picker :columns="allList.price" value-key="label" ref="item2">
+      <van-dropdown-item v-model="value3" title="租金" ref="item2">
+        <van-picker
+          :columns="allList.price"
+          value-key="label"
+          ref="pick1"
+          @confirm="onConfirm"
+        >
           <template #columns-bottom>
-            <btn @cancel="$refs.item2.toggle()"></btn>
+            <btn
+              @cancel="$refs.item2.toggle()"
+              @confirm="triggerConfirm('pick1', 'item2')"
+            ></btn>
           </template>
+          <!-- <template #confirm>
+          <button>oooasdasdasd</button>
+        </template> -->
         </van-picker>
       </van-dropdown-item>
       <van-dropdown-item v-model="value4">
@@ -101,7 +114,46 @@ export default {
     }
   },
   methods: {
-
+    async onConfirm (val) {
+      // console.log(val)
+      try {
+        this.obj.price = val.value
+        const res = await selectHouse(this.obj)
+        // console.log(res)
+        this.list = res.data.body.list
+        this.obj.price = null
+      } catch (err) {
+        console.log(err)
+      }
+    },
+    async onConfirm1 (val) {
+      // console.log(val)
+      try {
+        this.obj.roomType = val.value
+        const res = await selectHouse(this.obj)
+        // console.log(res)
+        this.list = res.data.body.list
+        this.obj.roomType = null
+      } catch (err) {
+        console.log(err)
+      }
+    },
+    async onConfirm2 (val) {
+      // console.log(val)
+      try {
+        this.obj.area = val.value
+        const res = await selectHouse(this.obj)
+        // console.log(res)
+        this.list = res.data.body.list
+        this.obj.area = null
+      } catch (err) {
+        console.log(err)
+      }
+    },
+    triggerConfirm (val, val1) {
+      this.$refs[val].confirm()
+      this.$refs[val1].toggle()
+    },
     async getAreaFind () {
       try {
         const res = await searchAreaFind()
@@ -109,8 +161,8 @@ export default {
         // this.$store.commit('setList', res.data.body)
         // vant级联有一个问题，数组中同级的必须格式一致，比如说如果这个列表有三级，那么第二级必须都有children，不然只会显示一列
         // delete this.allList.area.children[0]
-        this.allList.area.children[0].children = [{ label: '' }]
-        this.allList.subway.children[0].children = [{ label: '' }]
+        this.allList.area.children[0].children = [{ label: '', value: null }]
+        this.allList.subway.children[0].children = [{ label: '', value: null }]
         this.columns = [this.allList.area, this.allList.subway]
         console.log('sub', this.columns)
       } catch (err) {
@@ -136,8 +188,10 @@ export default {
     },
     async submit () {
       try {
-        console.log(this.$store.state.more)
-        this.obj.more = this.$store.state.more.join('|')
+        // console.log(this.$store.state.more)
+        if (this.$store.state.more && this.$store.state.more.length !== 0) {
+          this.obj.more = this.$store.state.more.join('|')
+        }
         const res = await selectHouse(this.obj)
         this.list = res.data.body.list
         console.log(res)

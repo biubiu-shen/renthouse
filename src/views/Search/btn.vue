@@ -15,6 +15,7 @@ export default {
       this.$emit('cancel')
     },
     onConfirm () {
+      this.$emit('confirm')
       // this.$refs.item.toggle()
     }
   },
